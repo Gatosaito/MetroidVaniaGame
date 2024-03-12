@@ -17,9 +17,26 @@ public class PlayerController : MonoBehaviour
     [Header("Private Variables")]
     private Rigidbody2D rb;
     private float xAxis;
+    Animator anim;
+
+    public static PlayerController Instance;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            Instance = this;
+        }
+    }
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
     }
 
     void Update()
@@ -27,15 +44,30 @@ public class PlayerController : MonoBehaviour
         GetInputs();
         Move(); 
         Jump();
+        Flip();
     }
 
     void GetInputs() 
     {
         xAxis= Input.GetAxisRaw("Horizontal");
     }
+
+    void Flip() 
+    {
+        if (xAxis < 0)
+        {
+            transform.localScale = new Vector2(-1, transform.localScale.y);
+        }
+        else if(xAxis > 0)
+        {
+            transform.localScale = new Vector2(1, transform.localScale.y);
+        }
+    }
+
     private void Move() 
     {
         rb.velocity = new Vector2(walkSpeed * xAxis, rb.velocity.y);
+        anim.SetBool("Walking", rb.velocity.x != 0 && Grounded());
     }
 
     public bool Grounded() 
@@ -61,5 +93,7 @@ public class PlayerController : MonoBehaviour
         {
             rb.velocity = new Vector3(rb.velocity.x, jumpForce);
         }
+
+        anim.SetBool("Jumping", !Grounded());
     }
 }
